@@ -26,7 +26,7 @@ const resource = defaultResource().merge(
 
 const FrontendTracer = async () => {
   const exporter = new OTLPTraceExporter({
-    url: "http://localhost:5173/v1/traces" //TODO: replace hard-coded frontend host + port
+    url: "http://localhost:5173/v1/traces" //TODO: replace hard-coded frontend host + port (3002 = grafana)
   });
   // const exporter = new ConsoleSpanExporter();
   const processor = new BatchSpanProcessor(exporter);

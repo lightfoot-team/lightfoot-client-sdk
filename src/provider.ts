@@ -31,13 +31,16 @@ const config = new Map();
  */
 const getFlagEvaluationConfig = async (evaluationContext: EvaluationContext) => {
   //TODO: For now, fetch evaluation for all flags for the given context 
-  const response = await axios.post('http://localhost:3001/api/evaluate/config', { context: evaluationContext }, axiosConfig);
+  const response = await axios.post('http://localhost:5173/api/evaluate/config', { context: evaluationContext }, axiosConfig);
+  // 3001
   // Set the flag evaluation result for each flag
-  response.data.forEach((result: Record<string, any>) => {
+     console.log('Response Data:', response.data)
+  Object.entries(response.data).forEach((result: Record<string, any>) => {
+     
     console.log('result:', result)
-    config.set(result.flagKey, result.evaluationResult);
+    config.set(result[0], result[1]);
   });
-
+  console.log('Config:', config)
 }
 
 const getFlagEvaluation = (flagKey: string, defaultValue: DefaultValue, evaluationContext: EvaluationContext) => {
@@ -127,9 +130,10 @@ export class ClientFeatureProvider implements Provider {
   // events = ProviderEventEmitter<AnyProviderEvent> = new OpenFeatureEventEmitter();
 
 
-  async initialize(context?: EvaluationContext | undefined) {
+  async initialize(context: EvaluationContext) {
     // code to initialize your provider
-    await getFlagEvaluationConfig
+    console.log('Getting config')
+    await getFlagEvaluationConfig(context)
   }
   // onClose?(){
   //   // code to shut down your provider

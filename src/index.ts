@@ -21,9 +21,9 @@ export const featureFlagsClient = OpenFeature.getClient();
 
 // expose async func to start the SDK
 export const LightFootClientSDK = {
-  init: (context: EvaluationContext) => {
+  init: async (context: EvaluationContext) => {
     OpenFeature.setContext(context)
-    clientFeatureFlagProvider.initialize()
+    await clientFeatureFlagProvider.initialize(context)
     featureFlagsClient.addHooks(new TracingHook());
     FrontendTracer();
   }

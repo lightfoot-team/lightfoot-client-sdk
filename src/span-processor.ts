@@ -18,7 +18,6 @@ export default class FeatureFlagSpanProcessor implements SpanProcessor {
             value: String(value),
           })
         });
-      
   }
 
   onEnd(span: ReadableSpan) {
