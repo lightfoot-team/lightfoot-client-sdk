@@ -12,8 +12,9 @@ import {
 } from '@openfeature/web-sdk';
 
 import axios from 'axios';
-import evaluatedFlags from './evaluated-cache';
+
 import { trace, context } from '@opentelemetry/api';
+import evaluatedFlagsCache from './evaluated-cache';
 type DefaultValue = string | boolean | JsonValue | number
 const axiosConfig = {
   headers: {
@@ -22,7 +23,8 @@ const axiosConfig = {
 };
 
 
-const config = new Map();
+const configCache = new Map();
+
 
 /** 
  * Retrieves the evaluation results for the current context to enable 
@@ -34,28 +36,28 @@ const getFlagEvaluationConfig = async (evaluationContext: EvaluationContext) => 
   const response = await axios.post('http://localhost:5173/api/evaluate/config', { context: evaluationContext }, axiosConfig);
   // 3001
   // Set the flag evaluation result for each flag
-     console.log('Response Data:', response.data)
+    //  console.log('Response Data:', response.data)
   Object.entries(response.data).forEach((result: Record<string, any>) => {
      
     console.log('result:', result)
-    config.set(result[0], result[1]);
+    configCache.set(result[0], result[1]);
   });
-  console.log('Config:', config)
+  // console.log('Config:', config)
 }
 
 const getFlagEvaluation = (flagKey: string, defaultValue: DefaultValue, evaluationContext: EvaluationContext) => {
   let evaluation;
-  if (!config.has(flagKey)) {
-    console.log('not in config')
+  if (!configCache.has(flagKey)) {
+    // console.log('not in config')
     evaluation = { // Default if flag is not in cache? 
       value: defaultValue,
       reason: 'STATIC'
     }
   } else {
-    evaluation = config.get(flagKey);
+    evaluation = configCache.get(flagKey);
   }
-  evaluatedFlags.set(flagKey, evaluation);
-  console.log('Setting evaluated flags', evaluatedFlags)
+  evaluatedFlagsCache.set(flagKey, evaluation);
+  // console.log('Setting evaluated flags', evaluatedFlagsCache)
 
   return evaluation;
 
@@ -120,7 +122,11 @@ export class ClientFeatureProvider implements Provider {
 
   async onContextChange?(oldContext: EvaluationContext, newContext: EvaluationContext): Promise<void> {
     // reconcile the provider's cached flags, if applicable
-    await getFlagEvaluationConfig
+    await getFlagEvaluationConfig; //TODO: add try/catch + error handling 
+    configCache.clear();
+    evaluatedFlagsCache.clear(); 
+    //TODO: verify that onContextChange is only clearing evaluated flags cache when context has changed
+    //.     maybe only remove the evaluations that have changed in the new context? 
   }
 
 

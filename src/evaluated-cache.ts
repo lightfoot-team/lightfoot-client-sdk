@@ -1,2 +1,2 @@
-const evaluatedFlags = new Map();
-export default evaluatedFlags;
+const evaluatedFlagsCache = new Map();
+export default evaluatedFlagsCache;
