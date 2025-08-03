@@ -49,7 +49,7 @@ const getFlagEvaluationConfig = async (evaluationContext: EvaluationContext) => 
   console.log('Config:', configCache)
   }
   catch (error) {
-    console.error('Could not fetch flag data from the evaluation API');
+    console.error('Could not fetch flag evaluation data from the evaluation API');
   }
 
 }

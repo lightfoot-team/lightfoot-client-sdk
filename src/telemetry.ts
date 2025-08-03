@@ -14,6 +14,7 @@ import { WebTracerProvider } from '@opentelemetry/sdk-trace-web';
 import {
   BatchSpanProcessor,
   ConsoleSpanExporter,
+  SimpleSpanProcessor,
 } from '@opentelemetry/sdk-trace-base';
 import { WebVitalsInstrumentation } from "@honeycombio/opentelemetry-web";
 import FeatureFlagSpanProcessor from './span-processor'
@@ -29,8 +30,8 @@ const FrontendTracer = async () => {
     url: "http://localhost:5173/v1/traces" //TODO: replace hard-coded frontend host + port (3002 = grafana)
   });
   // const exporter = new ConsoleSpanExporter();
-  const processor = new BatchSpanProcessor(exporter);
-
+  //const processor = new BatchSpanProcessor(exporter);
+  const processor = new SimpleSpanProcessor(exporter);
   const provider = new WebTracerProvider({
     resource: resource,
     spanProcessors: [ new FeatureFlagSpanProcessor(), processor]
