@@ -37,6 +37,7 @@ const flagEvaluationCache = {evaluations: configCache, ttl: Date.now() + TTL}
  */
 const getFlagEvaluationConfig = async (evaluationContext: EvaluationContext) => {
   //TODO: For now, fetch evaluation for all flags for the given context 
+  try {
   const response = await axios.post('http://localhost:5173/api/evaluate/config', { context: evaluationContext }, axiosConfig);
   // 3001
   // Set the flag evaluation result for each flag
@@ -46,6 +47,11 @@ const getFlagEvaluationConfig = async (evaluationContext: EvaluationContext) => 
     configCache.set(result[0], result[1]);
   });
   console.log('Config:', configCache)
+  }
+  catch (error) {
+    console.error('Could not fetch flag data from the evaluation API');
+  }
+
 }
 
 const isExpired = (ttl: number) => {
