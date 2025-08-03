@@ -6,6 +6,7 @@ import {
   Hook,
   JsonValue,
   Logger,
+  OpenFeature,
   Provider,
   ProviderEventEmitter,
   ResolutionDetails,
@@ -22,8 +23,11 @@ const axiosConfig = {
   }
 };
 
+/** The maximum time to live for a cached set of evalutions */
+const TTL = 1000;
 
 const configCache = new Map();
+const flagEvaluationCache = {evaluations: configCache, ttl: Date.now() + TTL}
 
 
 /** 
@@ -36,31 +40,39 @@ const getFlagEvaluationConfig = async (evaluationContext: EvaluationContext) => 
   const response = await axios.post('http://localhost:5173/api/evaluate/config', { context: evaluationContext }, axiosConfig);
   // 3001
   // Set the flag evaluation result for each flag
-    //  console.log('Response Data:', response.data)
+    // Add flag evaluations to cache
   Object.entries(response.data).forEach((result: Record<string, any>) => {
-     
     console.log('result:', result)
     configCache.set(result[0], result[1]);
   });
-  // console.log('Config:', config)
+  console.log('Config:', configCache)
+}
+
+const isExpired = (ttl: number) => {
+  const result = Date.now() > ttl;
+  return result;
 }
 
 const getFlagEvaluation = (flagKey: string, defaultValue: DefaultValue, evaluationContext: EvaluationContext) => {
   let evaluation;
   if (!configCache.has(flagKey)) {
-    // console.log('not in config')
+    console.log('not in config')
     evaluation = { // Default if flag is not in cache? 
       value: defaultValue,
       reason: 'STATIC'
     }
   } else {
+    if (isExpired(flagEvaluationCache.ttl)) {
+      console.log("Here in isExpired block");
+      OpenFeature.setContext(evaluationContext);
+    }
     evaluation = configCache.get(flagKey);
   }
+
   evaluatedFlagsCache.set(flagKey, evaluation);
-  // console.log('Setting evaluated flags', evaluatedFlagsCache)
+  console.log('Setting evaluated flags', evaluatedFlagsCache)
 
   return evaluation;
-
 }
 
 
@@ -125,6 +137,7 @@ export class ClientFeatureProvider implements Provider {
     await getFlagEvaluationConfig; //TODO: add try/catch + error handling 
     configCache.clear();
     evaluatedFlagsCache.clear(); 
+    console.log("onContextChange, changing context");
     //TODO: verify that onContextChange is only clearing evaluated flags cache when context has changed
     //.     maybe only remove the evaluations that have changed in the new context? 
   }
