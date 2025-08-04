@@ -18,6 +18,8 @@ import {
 } from '@opentelemetry/sdk-trace-base';
 import { WebVitalsInstrumentation } from "@honeycombio/opentelemetry-web";
 import FeatureFlagSpanProcessor from './span-processor'
+import config from "./config/config";
+
 const resource = defaultResource().merge(
   resourceFromAttributes({
     [ATTR_SERVICE_NAME]: 'client',
@@ -27,7 +29,7 @@ const resource = defaultResource().merge(
 
 const FrontendTracer = async () => {
   const exporter = new OTLPTraceExporter({
-    url: "http://localhost:5173/v1/traces" //TODO: replace hard-coded frontend host + port (3002 = grafana)
+    url: `${config.OTLPExporterBaseURL}/v1/traces`
   });
   // const exporter = new ConsoleSpanExporter();
   //const processor = new BatchSpanProcessor(exporter);
@@ -46,7 +48,7 @@ const FrontendTracer = async () => {
           propagateTraceHeaderCorsUrls: [
             // Array of Regex to match the backend urls where API calls are going
             // Allows context propagation 
-            'http://localhost:4318/',
+            `${config.tracesBaseUrl}`,
 
           ]
         },
@@ -54,7 +56,7 @@ const FrontendTracer = async () => {
           propagateTraceHeaderCorsUrls: [
             // Array of Regex to match the backend urls where API calls are going
             // Allows context propagation 
-            'http://localhost:4318/',
+            `${config.tracesBaseUrl}`,
           ]
         }
       }),
