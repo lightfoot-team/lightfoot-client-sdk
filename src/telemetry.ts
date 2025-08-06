@@ -12,13 +12,13 @@ import {
 } from '@opentelemetry/semantic-conventions';
 import { WebTracerProvider } from '@opentelemetry/sdk-trace-web';
 import {
-  BatchSpanProcessor,
-  ConsoleSpanExporter,
+  // BatchSpanProcessor,
+  // ConsoleSpanExporter,
   SimpleSpanProcessor,
 } from '@opentelemetry/sdk-trace-base';
 import { WebVitalsInstrumentation } from "@honeycombio/opentelemetry-web";
-import FeatureFlagSpanProcessor from './span-processor'
-import config from "./config/config";
+import FeatureFlagSpanProcessor from './span-processor';
+import type { ClientSDKConfig } from "./config/config";
 
 const resource = defaultResource().merge(
   resourceFromAttributes({
@@ -27,7 +27,7 @@ const resource = defaultResource().merge(
   }),
 );
 
-const FrontendTracer = async () => {
+const FrontendTracer = async (config: ClientSDKConfig) => {
   const exporter = new OTLPTraceExporter({
     url: `${config.OTLPExporterBaseURL}/v1/traces`
   });
@@ -64,4 +64,5 @@ const FrontendTracer = async () => {
     ]
   });
 };
+
 export default FrontendTracer;

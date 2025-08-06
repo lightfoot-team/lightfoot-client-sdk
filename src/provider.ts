@@ -1,4 +1,5 @@
 //import { OpenFeatureEventEmitter } from '@openfeature/js-sdk';
+import type { ClientSDKConfig } from './config/config';
 import {
   AnyProviderEvent,
   ClientProviderEvents,
@@ -28,31 +29,6 @@ const TTL = 1000;
 
 const configCache = new Map();
 const flagEvaluationCache = {evaluations: configCache, ttl: Date.now() + TTL}
-
-
-/** 
- * Retrieves the evaluation results for the current context to enable 
- * static evaluation of feature flags 
- * @param evaluationContext the context for static flag evaluation
- */
-const getFlagEvaluationConfig = async (evaluationContext: EvaluationContext) => {
-  //TODO: For now, fetch evaluation for all flags for the given context 
-  try {
-  const response = await axios.post('http://localhost:5173/api/evaluate/config', { context: evaluationContext }, axiosConfig);
-  // 3001
-  // Set the flag evaluation result for each flag
-    // Add flag evaluations to cache
-  Object.entries(response.data).forEach((result: Record<string, any>) => {
-    console.log('result:', result)
-    configCache.set(result[0], result[1]);
-  });
-  console.log('Config:', configCache)
-  }
-  catch (error) {
-    console.error('Could not fetch flag evaluation data from the evaluation API');
-  }
-
-}
 
 const isExpired = (ttl: number) => {
   const result = Date.now() > ttl;
@@ -85,6 +61,11 @@ const getFlagEvaluation = (flagKey: string, defaultValue: DefaultValue, evaluati
 
 //TODO: look up naming conventions for provider implementations
 export class ClientFeatureProvider implements Provider {
+  config: ClientSDKConfig;
+
+  constructor(config: ClientSDKConfig) {
+    this.config = config;
+  }
 
   // Adds runtime validation that the provider is used with the expected SDK
   public readonly runsOn = 'client';
@@ -95,6 +76,28 @@ export class ClientFeatureProvider implements Provider {
 
   // Optional provider managed hooks
   hooks: Hook[] = [];
+
+    /** 
+   * Retrieves the evaluation results for the current context to enable 
+   * static evaluation of feature flags 
+   * @param evaluationContext the context for static flag evaluation
+   */
+  async getFlagEvaluationConfig(evaluationContext: EvaluationContext) {
+    //TODO: For now, fetch evaluation for all flags for the given context 
+    try {
+    const response = await axios.post(`${this.config.OTLPExporterBaseURL}/api/evaluate/config`, { context: evaluationContext }, axiosConfig);
+    // Set the flag evaluation result for each flag
+      // Add flag evaluations to cache
+    Object.entries(response.data).forEach((result: Record<string, any>) => {
+      console.log('result:', result)
+      configCache.set(result[0], result[1]);
+    });
+    console.log('Config:', configCache)
+    }
+    catch (error) {
+      console.error('Could not fetch flag evaluation data from the evaluation API');
+    }
+  }
 
   resolveBooleanEvaluation(
     flagKey: string,
@@ -137,28 +140,29 @@ export class ClientFeatureProvider implements Provider {
     return resolutionDetails;
   }
 
-
   async onContextChange?(oldContext: EvaluationContext, newContext: EvaluationContext): Promise<void> {
-    // reconcile the provider's cached flags, if applicable
-    await getFlagEvaluationConfig; //TODO: add try/catch + error handling 
-    configCache.clear();
-    evaluatedFlagsCache.clear(); 
-    console.log("onContextChange, changing context");
-    //TODO: verify that onContextChange is only clearing evaluated flags cache when context has changed
-    //.     maybe only remove the evaluations that have changed in the new context? 
-  }
+    const contextsAreEqual = JSON.stringify(oldContext) === JSON.stringify(newContext);
 
+    if (!contextsAreEqual) {
+      try {
+        await this.getFlagEvaluationConfig(newContext);
+        configCache.clear();
+        evaluatedFlagsCache.clear();
+      } catch (err) {
+        console.error("Error refreshing flag config on context change:", err);
+      }
+    }
+  }
 
   // implement with "new OpenFeatureEventEmitter()", and use "emit()" to emit events
   //events: ProviderEventEmitter<AnyProviderEvent> = new OpenFeatureEventEmitter() as unknown as ProviderEventEmitter<AnyProviderEvent>;
 
   // events = ProviderEventEmitter<AnyProviderEvent> = new OpenFeatureEventEmitter();
 
-
   async initialize(context: EvaluationContext) {
     // code to initialize your provider
     console.log('Getting config')
-    await getFlagEvaluationConfig(context)
+    await this.getFlagEvaluationConfig(context)
   }
   // onClose?(){
   //   // code to shut down your provider

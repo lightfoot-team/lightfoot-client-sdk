@@ -1,11 +1,9 @@
-interface Config {
+export interface ClientSDKConfig {
   OTLPExporterBaseURL: string;
   tracesBaseUrl: string;
 }
 
-const config: Config = {
+export const defaultConfig: ClientSDKConfig = {
   OTLPExporterBaseURL: "http://localhost:5173",
   tracesBaseUrl: "http://localhost:4318/",
 };
-
-export default config;
