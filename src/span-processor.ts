@@ -12,23 +12,22 @@ export default class FeatureFlagSpanProcessor implements SpanProcessor {
    */
   onStart(span: Span) {
        evaluatedFlags.forEach((value, flagKey) => {
-        console.log('Flag:', value, flagKey)
         span.addEvent('feature_flag.evaluated',{
             flagKey,
-            value: String(value),
+            value: String(value), //TODO: send value and/or variant?
           })
         });
   }
 
   onEnd(span: ReadableSpan) {
-  
+    // No procedures needed when span ends
   }
 
   async shutdown(): Promise<void> {
-    // Clean up resources if needed
+    // No shutdown procedures needed
   }
 
   async forceFlush(): Promise<void> {
-    // If needed, force flush spans manually
+    // No force flush procedures needed
   }
 }

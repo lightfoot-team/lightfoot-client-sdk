@@ -1,6 +1,5 @@
 import type {Hook, HookContext, EvaluationDetails, FlagValue, Logger} from '@openfeature/server-sdk';
-import { trace, context, Span, Context } from '@opentelemetry/api';
-import { FEATURE_FLAG, KEY_ATTR, PROVIDER_NAME_ATTR, VARIANT_ATTR } from './conventions';
+import { trace, context, Context } from '@opentelemetry/api';
 import type { OpenTelemetryHookOptions } from './otel-hook';
 import { OpenTelemetryHook } from './otel-hook';
 export type TracingHookOptions = OpenTelemetryHookOptions;
@@ -26,7 +25,6 @@ export class TracingHook extends OpenTelemetryHook implements Hook {
    */
   before(hookContext: HookContext) {
     const activeContext = context.active();
-    console.log("Setting context for before hook:", activeContext);
     this.contextMap.set(hookContext, activeContext);
   }
 
@@ -41,10 +39,8 @@ export class TracingHook extends OpenTelemetryHook implements Hook {
     const currContext = this.contextMap.get(hookContext);
 
     if (!currContext) {
-      console.log('No context found');
       return;
     }
-    console.log('context found')
     context.with(currContext, () => {
       const parent = trace.getSpan(context.active());
       if (!parent) return;
