@@ -1,4 +1,4 @@
-import { Span } from '@opentelemetry/api';
+import { Span, ValueType } from '@opentelemetry/api';
 import { type SpanProcessor, type ReadableSpan } from '@opentelemetry/sdk-trace-base';
 import evaluatedFlags from './evaluated-cache';
 
@@ -11,10 +11,12 @@ export default class FeatureFlagSpanProcessor implements SpanProcessor {
    * @param span the span that just started.
    */
   onStart(span: Span) {
-       evaluatedFlags.forEach((value, flagKey) => {
+      evaluatedFlags.forEach((evaluation, flagKey) => {
+        const { value, variant } = evaluation;
         span.addEvent('feature_flag.evaluated',{
             flagKey,
             value: String(value), //TODO: send value and/or variant?
+            variant,
           })
         });
   }
