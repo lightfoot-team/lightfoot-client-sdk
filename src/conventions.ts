@@ -12,4 +12,5 @@ export type ExceptionAttributes = { [EXCEPTION_ATTR]: string };
 export const KEY_ATTR: keyof EvaluationAttributes = `${FEATURE_FLAG}.key`;
 export const PROVIDER_NAME_ATTR: keyof EvaluationAttributes = `${FEATURE_FLAG}.provider_name`;
 export const VARIANT_ATTR: keyof EvaluationAttributes = `${FEATURE_FLAG}.variant`;
+export const VALUE_ATTR: keyof EvaluationAttributes = `${FEATURE_FLAG}.value`;
 export const REASON_ATTR: keyof EvaluationAttributes = `${FEATURE_FLAG}.reason`;
