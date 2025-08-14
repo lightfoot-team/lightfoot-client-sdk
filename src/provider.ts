@@ -20,7 +20,7 @@ const axiosConfig = {
 };
 
 /** The maximum time to live for a cached set of evalutions */
-const TTL = 1000;
+const TTL = 180000;
 
 const configCache = new Map();
 const flagEvaluationCache = { evaluations: configCache, ttl: Date.now() + TTL }
