@@ -1,7 +1,7 @@
 import { Span, ValueType } from '@opentelemetry/api';
 import { type SpanProcessor, type ReadableSpan } from '@opentelemetry/sdk-trace-base';
 import evaluatedFlags from './evaluated-cache';
-import { FEATURE_FLAG, KEY_ATTR, VALUE_ATTR, VARIANT_ATTR, PROVIDER_NAME_ATTR  } from './conventions';
+import { FEATURE_FLAG, KEY_ATTR, VALUE_ATTR, VARIANT_ATTR, PROVIDER_NAME_ATTR } from './conventions';
 export default class FeatureFlagSpanProcessor implements SpanProcessor {
 
   /**
@@ -12,10 +12,16 @@ export default class FeatureFlagSpanProcessor implements SpanProcessor {
    */
   onStart(span: Span) {
     evaluatedFlags.forEach((evaluation, flagKey) => {
-      const { value, variant } = evaluation;
+      let { value, variant } = evaluation;
+      if (typeof value === 'object') {
+        value = JSON.stringify(value);
+      }
+      if (!variant) {
+        variant = value;
+      }
       span.addEvent(`${FEATURE_FLAG}.evaluated`, {
         [KEY_ATTR]: flagKey,
-        [VALUE_ATTR]: String(value), 
+        [VALUE_ATTR]: value,
         [VARIANT_ATTR]: variant,
       })
     });
