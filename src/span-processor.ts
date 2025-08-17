@@ -1,7 +1,8 @@
-import { Span, ValueType } from '@opentelemetry/api';
+import { Span } from '@opentelemetry/api';
 import { type SpanProcessor, type ReadableSpan } from '@opentelemetry/sdk-trace-base';
 import evaluatedFlags from './evaluated-cache';
-import { FEATURE_FLAG, KEY_ATTR, VALUE_ATTR, VARIANT_ATTR, PROVIDER_NAME_ATTR } from './conventions';
+import { KEY_ATTR, VALUE_ATTR, VARIANT_ATTR, PROVIDER_NAME_ATTR, EVALUATED } from './conventions';
+
 export default class FeatureFlagSpanProcessor implements SpanProcessor {
 
   /**
@@ -19,7 +20,7 @@ export default class FeatureFlagSpanProcessor implements SpanProcessor {
       if (!variant) {
         variant = value;
       }
-      span.addEvent(`${FEATURE_FLAG}.evaluated`, {
+      span.addEvent(EVALUATED, {
         [KEY_ATTR]: flagKey,
         [VALUE_ATTR]: value,
         [VARIANT_ATTR]: variant,

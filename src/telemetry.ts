@@ -1,21 +1,11 @@
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
-import { ZoneContextManager } from "@opentelemetry/context-zone"; // Allows Context management, limited with async and has performance overhead
+import { ZoneContextManager } from "@opentelemetry/context-zone";
 import { registerInstrumentations } from "@opentelemetry/instrumentation";
 import { getWebAutoInstrumentations } from "@opentelemetry/auto-instrumentations-web";
-import {
-  defaultResource,
-  resourceFromAttributes,
-} from '@opentelemetry/resources';
-import {
-  ATTR_SERVICE_NAME,
-  ATTR_SERVICE_VERSION,
-} from '@opentelemetry/semantic-conventions';
+import { defaultResource, resourceFromAttributes } from '@opentelemetry/resources';
+import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
 import { WebTracerProvider } from '@opentelemetry/sdk-trace-web';
-import {
-  // BatchSpanProcessor,
-  // ConsoleSpanExporter,
-  SimpleSpanProcessor,
-} from '@opentelemetry/sdk-trace-base';
+import { SimpleSpanProcessor } from '@opentelemetry/sdk-trace-base'; //BatchSpanProcessor
 import { WebVitalsInstrumentation } from "@honeycombio/opentelemetry-web";
 import FeatureFlagSpanProcessor from './span-processor';
 import type { ClientSDKConfig } from "./config/config";
@@ -31,12 +21,11 @@ const FrontendTracer = async (config: ClientSDKConfig) => {
   const exporter = new OTLPTraceExporter({
     url: `${config.OTLPExporterBaseURL}/v1/traces`
   });
-  // const exporter = new ConsoleSpanExporter();
   //const processor = new BatchSpanProcessor(exporter);
   const processor = new SimpleSpanProcessor(exporter);
   const provider = new WebTracerProvider({
     resource: resource,
-    spanProcessors: [ new FeatureFlagSpanProcessor(), processor]
+    spanProcessors: [new FeatureFlagSpanProcessor(), processor]
   });
 
   provider.register({ contextManager: new ZoneContextManager() });
@@ -45,19 +34,10 @@ const FrontendTracer = async (config: ClientSDKConfig) => {
     instrumentations: [
       getWebAutoInstrumentations({
         '@opentelemetry/instrumentation-fetch': {
-          propagateTraceHeaderCorsUrls: [
-            // Array of Regex to match the backend urls where API calls are going
-            // Allows context propagation 
-            `${config.tracesBaseUrl}`,
-
-          ]
+          propagateTraceHeaderCorsUrls: config.propagateTraceHeaderCorsUrls,
         },
         '@opentelemetry/instrumentation-xml-http-request': {
-          propagateTraceHeaderCorsUrls: [
-            // Array of Regex to match the backend urls where API calls are going
-            // Allows context propagation 
-            `${config.tracesBaseUrl}`,
-          ]
+          propagateTraceHeaderCorsUrls: config.propagateTraceHeaderCorsUrls,
         }
       }),
       new WebVitalsInstrumentation()

@@ -10,14 +10,12 @@ import {
 } from '@openfeature/web-sdk';
 
 import axios from 'axios';
-
+import { axiosConfig } from './config/config';
+import { Reason } from './conventions';
 import evaluatedFlagsCache from './evaluated-cache';
+
 type DefaultValue = string | boolean | JsonValue | number
-const axiosConfig = {
-  headers: {
-    'Content-Type': 'application/json',
-  }
-};
+
 
 /** The maximum time to live for a cached set of evalutions */
 const TTL = 180000;
@@ -43,7 +41,7 @@ export class ClientFeatureProvider implements Provider {
   public readonly runsOn = 'client';
 
   readonly metadata = {
-    name: 'Frontend Provider',
+    name: 'LightFoot Client Provider',
   } as const;
 
   // Optional provider managed hooks
@@ -58,8 +56,6 @@ export class ClientFeatureProvider implements Provider {
     //TODO: For now, fetch evaluation for all flags for the given context 
     try {
       const response = await axios.post(`${this.config.OTLPExporterBaseURL}/api/evaluate/config`, { context: evaluationContext }, axiosConfig);
-      // Set the flag evaluation result for each flag
-      // Add flag evaluations to cache
       Object.entries(response.data).forEach((result: Record<string, any>) => {
         const flagKey = result[0];
         const evaluation = result[1];
@@ -76,16 +72,16 @@ export class ClientFeatureProvider implements Provider {
     if (!configCache.has(flagKey)) {
       evaluation = {
         value: defaultValue,
-        reason: 'STATIC'
+        reason: Reason.STATIC
       }
     } else {
       if (isExpired(flagEvaluationCache.ttl)) {
         this.getFlagEvaluationConfig(evaluationContext).catch(console.error);
         evaluation = configCache.get(flagKey);
-        evaluation.reason = 'STALE';
+        evaluation.reason = Reason.STALE;
       } else {
         evaluation = configCache.get(flagKey);
-        evaluation.reason = 'CACHED';
+        evaluation.reason = Reason.CACHED;
       }
 
     }
