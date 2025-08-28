@@ -1,4 +1,3 @@
-//import { OpenFeatureEventEmitter } from '@openfeature/js-sdk';
 import type { ClientSDKConfig } from './config/config';
 import {
   EvaluationContext,
@@ -28,8 +27,6 @@ const isExpired = (ttl: number) => {
   return result;
 }
 
-
-//TODO: look up naming conventions for provider implementations
 export class ClientFeatureProvider implements Provider {
   config: ClientSDKConfig;
 
@@ -37,14 +34,12 @@ export class ClientFeatureProvider implements Provider {
     this.config = config;
   }
 
-  // Adds runtime validation that the provider is used with the expected SDK
   public readonly runsOn = 'client';
 
   readonly metadata = {
     name: 'LightFoot Client Provider',
   } as const;
 
-  // Optional provider managed hooks
   hooks: Hook[] = [];
 
   /** 
@@ -53,7 +48,6 @@ export class ClientFeatureProvider implements Provider {
  * @param evaluationContext the context for static flag evaluation
  */
   async getFlagEvaluationConfig(evaluationContext: EvaluationContext) {
-    //TODO: For now, fetch evaluation for all flags for the given context 
     try {
       const response = await axios.post(`${this.config.OTLPExporterBaseURL}/api/evaluate/config`, { context: evaluationContext }, axiosConfig);
       Object.entries(response.data).forEach((result: Record<string, any>) => {
@@ -67,6 +61,14 @@ export class ClientFeatureProvider implements Provider {
     }
   }
 
+  /**
+   * Fetches the evaluation result for the given flag and context and updates the cache if it 
+   * has been invalidated 
+   * @param flagKey the flag key for which to fetch an evaluation
+   * @param defaultValue the fallback value to evaluate with if an evaluation cannot be fetched
+   * @param evaluationContext the context with which to evaluate the flag
+   * @returns 
+   */
   getFlagEvaluation(flagKey: string, defaultValue: DefaultValue, evaluationContext: EvaluationContext) {
     let evaluation;
     if (!configCache.has(flagKey)) {
@@ -131,6 +133,13 @@ export class ClientFeatureProvider implements Provider {
     return resolutionDetails;
   }
 
+  /**
+   * Runs after an event causes the evaluation context to be reassigned,
+   * invalidating both caches and fetching new flag evaluations if the new 
+   * context has distinct values
+   * @param oldContext the previous context prior to the change event
+   * @param newContext the context after the change event
+   */
   async onContextChange?(oldContext: EvaluationContext, newContext: EvaluationContext): Promise<void> {
     const contextsAreEqual = JSON.stringify(oldContext) === JSON.stringify(newContext);
 
@@ -145,8 +154,12 @@ export class ClientFeatureProvider implements Provider {
     }
   }
 
+  /**
+   * Initializes the static flag evaluation cache with the provided context,
+   * fetching all flags with a rule matching the context
+   * @param context the evaluation context with which to initialize the flag cache
+   */
   async initialize(context: EvaluationContext) {
-
     await this.getFlagEvaluationConfig(context)
   }
 

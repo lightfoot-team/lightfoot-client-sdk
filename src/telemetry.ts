@@ -5,7 +5,7 @@ import { getWebAutoInstrumentations } from "@opentelemetry/auto-instrumentations
 import { defaultResource, resourceFromAttributes } from '@opentelemetry/resources';
 import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
 import { WebTracerProvider } from '@opentelemetry/sdk-trace-web';
-import { SimpleSpanProcessor } from '@opentelemetry/sdk-trace-base'; //BatchSpanProcessor
+import { SimpleSpanProcessor, BatchSpanProcessor } from '@opentelemetry/sdk-trace-base'; //BatchSpanProcessor
 import { WebVitalsInstrumentation } from "@honeycombio/opentelemetry-web";
 import FeatureFlagSpanProcessor from './span-processor';
 import type { ClientSDKConfig } from "./config/config";
@@ -17,11 +17,15 @@ const resource = defaultResource().merge(
   }),
 );
 
+/**
+ * Sets up OpenTelemetry instrumentation, telemetry export,
+ * and context management for the client SDK
+ * @param config the configuration object to use in SDK setup
+ */
 const FrontendTracer = async (config: ClientSDKConfig) => {
   const exporter = new OTLPTraceExporter({
     url: `${config.OTLPExporterBaseURL}/v1/traces`
   });
-  //const processor = new BatchSpanProcessor(exporter);
   const processor = new SimpleSpanProcessor(exporter);
   const provider = new WebTracerProvider({
     resource: resource,

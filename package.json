@@ -1,6 +1,6 @@
 {
-  "name": "client-sdk",
-  "version": "0.1.0",
+  "name": "lightfoot-client-sdk",
+  "version": "1.0.0",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.d.ts",
   "types": "./dist/esm/index.d.ts",
@@ -13,25 +13,23 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/team-alpascal/client-sdk.git"
+    "url": "git+https://github.com/lightfoot-team/lightfoot-client-sdk.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/team-alpascal/client-sdk/issues"
+    "url": "https://github.com/lightfoot-team/lightfoot-client-sdk/issues"
   },
-  "homepage": "https://github.com/team-alpascal/client-sdk#readme",
+  "homepage": "https://github.com/lightfoot-team/lightfoot-client-sdk#readme",
   "description": "",
   "devDependencies": {
     "@types/express": "^5.0.3",
     "typescript": "^5.8.3"
   },
-
   "dependencies": {
     "@honeycombio/opentelemetry-web": "^1.0.1",
     "@openfeature/open-telemetry-hooks": "^0.4.0",
-
     "@openfeature/js-sdk": "1.6.1",
     "@opentelemetry/api": "^1.9.0",
     "@opentelemetry/auto-instrumentations-node": "^0.62.0",
@@ -49,7 +47,7 @@
     "axios": "^1.10.0",
     "express": "^5.1.0"
   },
-    "peerDependencies": {
+  "peerDependencies": {
     "@openfeature/web-sdk": "^1.5.0"
   }
 }

@@ -1,7 +1,6 @@
 import FrontendTracer from "./telemetry";
 import { ClientFeatureProvider } from "./provider";
 import { OpenFeature, EvaluationContext } from "@openfeature/web-sdk";
-import { TracingHook } from './hook';
 import { ClientSDKConfig, defaultConfig } from "./config/config";
 
 class LightFootClientSDK {
@@ -19,7 +18,6 @@ class LightFootClientSDK {
   async init(context: EvaluationContext) {
     OpenFeature.setContext(context);
     await this.provider.initialize(context);
-    this.featureFlagsClient.addHooks(new TracingHook());
     await FrontendTracer(this.config);
   }
 

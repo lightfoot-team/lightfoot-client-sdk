@@ -29,14 +29,14 @@ export default class FeatureFlagSpanProcessor implements SpanProcessor {
   }
 
   onEnd(span: ReadableSpan) {
-    // No procedures needed when span ends
+    // No-op
   }
 
   async shutdown(): Promise<void> {
-    // No shutdown procedures needed
+    // No-op
   }
 
   async forceFlush(): Promise<void> {
-    // No force flush procedures needed
+    // No-op
   }
 }
